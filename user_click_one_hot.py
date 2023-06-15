@@ -1,5 +1,6 @@
 # %%
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.model_selection import StratifiedShuffleSplit
 
 import numpy as np
 import pandas as pd
@@ -160,7 +161,7 @@ test_x = torch.FloatTensor(user_vector_test)
 print(test_x.shape)
 
 # %%
-number_of_epoch = 100
+number_of_epoch = 1000
 learning_rate = 0.001
 batch_size = 128
 embedding_dimension = train_x.shape[1]
@@ -168,6 +169,8 @@ hidden_dimension = 256
 latent_dimension = 256
 output_dimension = 15
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+_, counts = train_y.reshape(-1).unique(return_counts=True)
+class_weights = 1 - counts / counts.sum()
 
 # %%
 # news_embeddings = np.load('./data/news_embedding/news_embedding_vector.npy')
@@ -350,8 +353,8 @@ for epoch in tqdm.tqdm(range(number_of_epoch)):
     accuracy = accuracy_score(labels, predicts)
     f1 = f1_score(labels, predicts)
     writer.add_scalar('Train AUC', auc, epoch)
-    writer.add_scalar('Train Accuracy', accuracy_score, epoch)
-    writer.add_scalar('Train F1', f1_score, epoch)
+    writer.add_scalar('Train Accuracy', accuracy, epoch)
+    writer.add_scalar('Train F1', f1, epoch)
 
     del predicts
 
